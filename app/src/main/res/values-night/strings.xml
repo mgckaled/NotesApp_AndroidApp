@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="my_notes">My Notes</string>
+  <string name="note_title">Note Title</string>
+  <string name="note_subtitle">Note Subtitle</string>
+  <string name="type_note_here">Type note here...</string>
+  <string name="miscellaneous">Miscellaneous</string>
+</resources>
