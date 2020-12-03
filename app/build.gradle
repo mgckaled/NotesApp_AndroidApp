@@ -44,7 +44,7 @@ dependencies {
     // RecycleView
     implementation "androidx.recyclerview:recyclerview:1.1.0"
 
-    //Scalable Size Unit (support for diferrent Screen Sizes)
+    //Scalable Size Unit (support for different Screen Sizes)
     implementation "com.intuit.sdp:sdp-android:1.0.6"
     implementation "com.intuit.ssp:ssp-android:1.0.6"
 
