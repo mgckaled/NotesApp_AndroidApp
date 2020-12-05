@@ -58,6 +58,8 @@ public class CreateNoteActivity extends AppCompatActivity {
 
     private AlertDialog dialogAddURL;
 
+    private Note alreadyAvailableNote;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +82,6 @@ public class CreateNoteActivity extends AppCompatActivity {
         layoutWebURL = findViewById(R.id.layoutWebURL);
 
 
-
         // Return current DataTime
         textDateTime.setText(
                 new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm ", Locale.US)
@@ -95,13 +96,57 @@ public class CreateNoteActivity extends AppCompatActivity {
         selectedNoteColor = "#333333";
         selectedImagePath = "";
 
+        if (getIntent().getBooleanExtra("isViewOrUpdate", false)) {
+            alreadyAvailableNote = (Note) getIntent().getSerializableExtra("note");
+            setViewOrUpdateNote();
+        }
+
+        // onclick listener to delete WebURL from note
+        findViewById(R.id.imageRemoveWebURL).setOnClickListener(v -> {
+            textWebURL.setText(null);
+            layoutWebURL.setVisibility(View.GONE);
+        });
+
+        // onclick listener to delete Image from note
+        findViewById(R.id.imageRemoveImage).setOnClickListener(v -> {
+            imageNote.setImageBitmap(null);
+            imageNote.setVisibility(View.GONE);
+            findViewById(R.id.imageRemoveImage).setVisibility(View.GONE);
+            selectedImagePath = "";
+        });
+
         // implement method onCreate
         initMiscellaneous();
         setSubtitleIndicatorColor();
+
     }
 
-    //Validations
+    private void setViewOrUpdateNote() {
+        inputNoteTitle.setText(alreadyAvailableNote.getTitle());
+        inputNoteSubtitle.setText(alreadyAvailableNote.getSubtitle());
+        inputNoteText.setText(alreadyAvailableNote.getNoteText());
+        textDateTime.setText(new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm ", Locale.US)
+                .format(new Date()));
+
+
+        if (alreadyAvailableNote.getImagePath() != null
+                && !alreadyAvailableNote.getImagePath().trim().isEmpty()) {
+            imageNote.setImageBitmap(BitmapFactory.decodeFile(alreadyAvailableNote.getImagePath()));
+            imageNote.setVisibility(View.VISIBLE);
+            findViewById(R.id.imageRemoveImage).setVisibility(View.VISIBLE);
+            selectedImagePath = alreadyAvailableNote.getImagePath();
+        }
+        if (alreadyAvailableNote.getWebLink() != null
+                && !alreadyAvailableNote.getWebLink().trim().isEmpty()) {
+            textWebURL.setText(alreadyAvailableNote.getWebLink());
+            layoutWebURL.setVisibility(View.VISIBLE);
+        }
+    }
+
+
     private void saveNote() {
+
+        // Check if the text inputs have text before save notes.
         if(inputNoteTitle.getText().toString().trim().isEmpty()) {
             Toast.makeText(this,
                     "Note title can't be empty", Toast.LENGTH_SHORT).show();
@@ -123,6 +168,16 @@ public class CreateNoteActivity extends AppCompatActivity {
 
         if (layoutWebURL.getVisibility() == View.VISIBLE) {
             note.setWebLink(textWebURL.getText().toString());
+        }
+
+        /*
+        * Setting id of new note from an already available note.
+        * Since we have set onConflictStrategy to "REPLACE" in NoteDao.
+        * This means if id of new note is already available in the databese
+        * then it will be replaced with note and our note get updated.
+        * */
+        if (alreadyAvailableNote != null) {
+            note.setId(alreadyAvailableNote.getId());
         }
 
         // Room does not allow database operation on the Main Thread.
@@ -222,6 +277,24 @@ public class CreateNoteActivity extends AppCompatActivity {
             setSubtitleIndicatorColor();
         });
 
+        if (alreadyAvailableNote != null && alreadyAvailableNote.getColor() != null
+                && !alreadyAvailableNote.getColor().trim().isEmpty()) {
+            switch (alreadyAvailableNote.getColor()) {
+                case "#FDBE3B":
+                    layoutMiscelllaneous.findViewById(R.id.viewColor2).performClick();
+                    break;
+                case "#FF4842":
+                    layoutMiscelllaneous.findViewById(R.id.viewColor3).performClick();
+                    break;
+                case "#3A52FC":
+                    layoutMiscelllaneous.findViewById(R.id.viewColor4).performClick();
+                    break;
+                case "#000000":
+                    layoutMiscelllaneous.findViewById(R.id.viewColor5).performClick();
+                    break;
+            }
+        }
+
         // Check if app has permission to read external storage
         layoutMiscelllaneous.findViewById(R.id.layoutAddImage).setOnClickListener(v -> {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -289,6 +362,7 @@ public class CreateNoteActivity extends AppCompatActivity {
                         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                         imageNote.setImageBitmap(bitmap);
                         imageNote.setVisibility(View.VISIBLE);
+                        findViewById(R.id.imageRemoveImage).setVisibility(View.VISIBLE);
 
                         selectedImagePath = getPathFromUri(selectedImageUri);
 
